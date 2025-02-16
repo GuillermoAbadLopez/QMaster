@@ -1,0 +1,217 @@
+\documentclass[10]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry} % Adjust page margins
+\geometry{margin=1in}
+\usepackage{amsfonts}
+
+
+
+
+% Title and author
+\title{Quantum Information Theory \\ - Homework 6 -\\ }
+\author{David Ullrich}
+\date{\today}
+
+\begin{document}
+\maketitle
+\section*{Part I}
+The first part of the exercise asks us to determine $I(X ; Y)$ aswell as $I(X ; B)_\rho$ for the given classical-quantum state before and after a POVM measurement.
+\vspace{0.3cm}
+
+We start with the slightly easier part of obtaining the mutual information before the POVM measurement, so $I(X ; B)_\rho$.
+$$
+\begin{aligned}
+I(X ; B)_{\rho} & =H(B)_{\rho}-H(B \mid X)_{\rho}=H(B)_{\rho_{B}}
+\end{aligned}
+$$
+where we have taken advantage of the conditioned on the classical variable the state is pure.
+To determine $H(B)_{\rho}$, we need to acquire the $\rho_B$ first by taking the partial trace.
+$$
+\begin{aligned}
+\rho_{B} & =\operatorname{Tr}_{X}\left\{\rho_{X B}\right\}=\frac{1}{2}\left(\left|\theta_{0}\right\rangle\left\langle\theta_{0}|+| \theta_{1}\right\rangle\left\langle\theta_{1}\right|\right)= \\
+& =
+    \begin{bmatrix}
+        \cos ^{2}\left(\frac{\theta}{2}\right) & 0 \\
+        0 & \sin ^{2}\left(\frac{\theta}{2}\right) \\
+    \end{bmatrix}
+\end{aligned}
+$$
+Which finally leads to:
+$$
+\begin{aligned}
+I(X ; Y) & =\frac{1}{2}(1+\sin \theta) \log (1+\sin \theta)+\frac{1}{2}(1-\sin \theta) \log (1-\sin \theta) .
+\end{aligned}
+$$
+
+To compute $I(X ; Y)$, we once again have to compute $H(Y)$ and $H(Y\mid X)$, but without the luxury of the conditional entropy being zero. On the other hand we notice two important aspects. Firstly, that $p_Y(0) = p_Y(1)$.
+$$
+p_{Y}(0)=\frac{1}{2}\left(p_{Y \mid X}(0 \mid 0)+p_{Y \mid X}(0 \mid 1)\right)=\frac{1}{2}\left(1-P_{e}+P_{e}\right)=\frac{1}{2}\left(p_{Y \mid X}(1 \mid 0)+p_{Y \mid X}(1 \mid 1)\right)=\frac{1}{2}=p_{Y}(1)
+$$
+which leads to 
+$$
+\begin{aligned}
+H(Y) &= -\sum_{y} p_{Y}(y) \log p_{Y}(y) \\
+& =-\frac{1}{2} \log \frac{1}{2}-\frac{1}{2} \log \frac{1}{2}\\
+& =1 .
+\end{aligned}
+$$
+And secondly, do to the symmetry of the channel, we can express the conditional entropy simply by using the given error probability, $P_e = \frac{1}{2}(1-\sin{\theta})$.
+$$
+\begin{aligned}
+H(Y\mid X) &=  H(Y \mid x=0)p_X(x=0)-H(Y \mid x=1)p_X(x=1)\\
+& =-\left(1-P_{e}\right) \log \left(1-P_{e}\right)-P_{e} \log P_{e}\\
+\end{aligned}
+$$
+This eventually gives us the following expression for the mutual information 
+$$
+\begin{aligned}
+    I(X ; Y) & = 1+\left(1-\frac{1}{2}(1-\sin \theta)\right) \log \left\{1-\frac{1}{2}(1-\sin \theta)\right\}+\frac{1}{2}(1-\sin \theta) \log \left\{\frac{1}{2}(1-\sin \theta)\right\} \\
+\end{aligned}
+$$
+Notice the similarities to the classical BSC.
+
+As we can see $I(X; B)_\rho \geq I(X ; Y)$ which is in accordance of the data processing inequality. Both entities reach their maximum value at $\omega = \pi/2$. At this point the error probability is zero and the channel thereby noiseless giving us the same value for both. When the angle between the two states is zero or $pi$ on the other hand, the two cannot be distinguishable leading to $I(X ; Y) = I(X; B) = 0$. 
+
+
+\section*{Part II}
+We're now asked to show that the given square-root measurement is in fact a POVM.
+$$
+\Lambda_{y}=\frac{1}{4}\left(\rho_{B^{3}}\right)^{-\frac{1}{2}}\left|\psi_{y}\right\rangle\left\langle\psi_{y}\right|\left(\rho_{B^{3}}\right)^{-\frac{1}{2}}, \text { for } y \in[0,1,2,3]
+$$
+For this we need to show that $\Lambda_Y \geq 0 \forall y$ and $\sum_{y} \Lambda_{y}$=\(\mathds{1}\).
+The positivity becomes obvious when realizing that every element consists of a projector namely $\left|\psi_{y}\right\rangle\left\langle\psi_{y}\right|$ and to positive maps acting on it from each side. The positive map results from the fact that $\rho_B3$ is a density matrix and there by positive as well as its negative square root. This means that each $\Lambda_Y$ can be seen as a projector itself and the positivity becomes trivial.
+
+For the second part we need to compute $\rho_B^3$ first.
+$$
+\rho_{B^{3}}=\operatorname{tr}_{X}\left\{\rho_{X B^{3}}\right\}= \sum_{x}p_X(x)\left|\psi_{x}\right\rangle\left\langle\left.\psi_{x}\right|_{B^{3}}\right =\frac{1}{4} \sum_{x}\left|\psi_{x}\right\rangle\left\langle\left.\psi_{x}\right|_{B^{3}}\right.
+$$
+With this we see that:
+$$
+\begin{aligned}
+\sum_y \Lambda_y & =\sum_y \frac{1}{4}\left(\rho_{B^3}\right)^{-\frac{1}{2}}\left|\psi_y\right\rangle\left\langle\psi_y\right|\left(\rho_{B^3}\right)^{-\frac{1}{2}}=\left(\rho_{B^3}\right)^{-\frac{1}{1}}\left(\frac{1}{4} \sum_y\left|\psi_y\right\rangle\left\langle\psi_y\right|\right)\left(\rho_{B^3}\right)^{-\frac{1}{2}}= \\
+& =\left(\rho_{B^3}\right)^{-\frac{1}{2}} \rho_{B^3}\left(\rho_{B^3}\right)^{-\frac{1}{2}}=\mathbb{1}
+\end{aligned}
+$$
+
+
+
+
+
+
+
+
+
+Quantum mutual information: The quantum mutual information can be expressed as
+
+$$
+I_{3}\left(X ; B^{3}\right)=H_{3}\left(B^{3}\right)_{\rho}-H\left(B^{3} \mid X\right)_{\rho}
+$$
+
+First, note that $H\left(B^{3} \mid X\right)_{\rho}$ vanishes, since given a value of $X$, the state of $B^{3}$ is pure, in other words
+
+$$
+H\left(B^{3} \mid X\right)_{\rho}=\sum_{x} p_{X}(x) H\left(B^{3} \mid X=x\right)_{\rho}=\sum_{x} p_{X}(x) H\left(B^{3}\right)_{\psi_{x}}=0
+$$
+
+where we have used that for pure states $|\phi\rangle \in \mathcal{H}_{B}, H(B)_{\phi}=0$. Therefore, the quantum mutual information is simply
+
+$$
+I_{3}\left(X ; B^{3}\right)_{\rho}=H_{3}\left(B^{3}\right)_{\rho}=-\operatorname{tr}\left\{\rho_{B^{3}} \log \rho_{B^{3}}\right\}
+$$
+
+\section*{Quantum Information: Homework lecture 6}
+where we know that
+
+$$
+\rho_{B^{3}}=\operatorname{tr}_{X}\left\{\rho_{X B^{3}}\right\}=\frac{1}{4} \sum_{x}\left|\psi_{x}\right\rangle\left\langle\psi_{x}\right|
+$$
+
+One can see that the explicit form of $\rho_{B^{3}}$ is
+
+$$
+\rho_{B^{3}}=\left(\begin{array}{cccccccc}
+\cos ^{6}\left(\frac{\theta}{2}\right) & 0 & 0 & 0 & 0 & 0 & 0 & \cos ^{3}\left(\frac{\theta}{2}\right) \sin ^{3}\left(\frac{\theta}{2}\right) \\
+0 & \cos ^{4}\left(\frac{\theta}{2}\right) \sin ^{2}\left(\frac{\theta}{2}\right) & 0 & 0 & 0 & 0 & \cos ^{3}\left(\frac{\theta}{2}\right) \sin ^{3}\left(\frac{\theta}{2}\right) & 0 \\
+0 & 0 & \cos ^{4}\left(\frac{\theta}{2}\right) \sin ^{2}\left(\frac{\theta}{2}\right) & 0 & 0 & \cos ^{3}\left(\frac{\theta}{2}\right) \sin ^{3}\left(\frac{\theta}{2}\right) & 0 & 0 \\
+0 & 0 & 0 & \cos ^{2}\left(\frac{\theta}{2}\right) \sin ^{4}\left(\frac{\theta}{2}\right) & \cos ^{3}\left(\frac{\theta}{2}\right) \sin ^{3}\left(\frac{\theta}{2}\right) & 0 & 0 & 0 \\
+0 & 0 & 0 & \cos ^{3}\left(\frac{\theta}{2}\right) \sin ^{3}\left(\frac{\theta}{2}\right) & \cos ^{4}\left(\frac{\theta}{2}\right) \sin ^{2}\left(\frac{\theta}{2}\right) & 0 & 0 & 0 \\
+0 & 0 & \cos ^{3}\left(\frac{\theta}{2}\right) \sin ^{3}\left(\frac{\theta}{2}\right) & 0 & 0 & \cos ^{2}\left(\frac{\theta}{2}\right) \sin ^{4}\left(\frac{\theta}{2}\right) & 0 & 0 \\
+0 & \cos ^{3}\left(\frac{\theta}{2}\right) \sin ^{3}\left(\frac{\theta}{2}\right) & 0 & 0 & 0 & 0 & \cos ^{2}\left(\frac{\theta}{2}\right) \sin ^{4}\left(\frac{\theta}{2}\right) & 0 \\
+\cos ^{3}\left(\frac{\theta}{2}\right) \sin ^{3}\left(\frac{\theta}{2}\right) & 0 & 0 & 0 & 0 & 0 & 0 & \sin ^{6}\left(\frac{\theta}{2}\right)
+\end{array}\right)
+$$
+
+So notice that this matrix can be decomposed into four matrices, three of which are equal, so we will have, in principle, two different pairs of eigenvalues. The first one is obtained by diagonalizing
+
+$$
+\left(\begin{array}{cc}
+\cos ^{6}\left(\frac{\theta}{2}\right) & \cos ^{3}\left(\frac{\theta}{2}\right) \sin ^{3}\left(\frac{\theta}{2}\right) \\
+\cos ^{3}\left(\frac{\theta}{2}\right) \sin ^{3}\left(\frac{\theta}{2}\right) & \sin ^{6}\left(\frac{\theta}{2}\right)
+\end{array}\right) \Rightarrow \lambda=\left\{\begin{array}{l}
+0 \\
+\cos ^{6}\left(\frac{\theta}{2}\right)+\sin ^{6}\left(\frac{\theta}{2}\right)
+\end{array}\right.
+$$
+
+and the second one
+
+$$
+\left(\begin{array}{ll}
+\cos ^{4}\left(\frac{\theta}{2}\right) \sin ^{2}\left(\frac{\theta}{2}\right) & \cos ^{3}\left(\frac{\theta}{2}\right) \sin ^{3}\left(\frac{\theta}{2}\right) \\
+\cos ^{3}\left(\frac{\theta}{2}\right) \sin ^{3}\left(\frac{\theta}{2}\right) & \cos ^{2}\left(\frac{\theta}{2}\right) \sin ^{4}\left(\frac{\theta}{2}\right)
+\end{array}\right) \Rightarrow \lambda=\left\{\begin{array}{l}
+0 \\
+\cos ^{4}\left(\frac{\theta}{2}\right) \sin ^{2}\left(\frac{\theta}{2}\right)+\cos ^{2}\left(\frac{\theta}{2}\right) \sin ^{4}\left(\frac{\theta}{2}\right)
+\end{array}\right.
+$$
+
+Finally, using some trigonometric identities, $\rho_{B^{3}}$ only has three different eigenvalues:
+
+$$
+\lambda=\left\{1-\frac{3}{4} \sin ^{2} \theta ; \frac{1}{4} \sin ^{2} \theta ; 0\right\}
+$$
+
+the first with multiplicity 1 , the second with multiplicity 3 and the third with multiplicity 4 . Therefore, the quantum mutual information takes the form
+
+$$
+I_{3}\left(X ; B^{3}\right)_{\rho}=-\left(1-\frac{3}{4} \sin ^{2} \theta\right) \log \left(1-\frac{3}{4} \sin ^{2} \theta\right)-\frac{3}{4} \sin ^{2} \theta \log \left(\frac{1}{4} \sin ^{2} \theta\right)
+$$
+
+that again, for completely indistinguishable states $(\theta=0$ or $\pi)$ is zero, and reaches the maximum value of 2 for orthogonal states $\left(\theta=\frac{\pi}{2}\right)$.
+
+We can see that the data processing inequality is also fulfilled for the case of three qubit discrimination for all values of $\theta$. In this case, at $\theta=0, \pi$ the information is also null, and the maximum happens again at $\theta=1 / 2$, obtaining a maximum value for both $I(X ; Y)$ and $I(X ; B)_{\rho}$ of 2 . This is perfectly reasonable since the two states
+
+\begin{center}
+\includegraphics[max width=\textwidth]{2023_12_17_508808f97c0b6e8410cbg-09}
+\end{center}
+
+Figure 2: Plots of $I_{3}(X ; Y)$ and $I_{3}\left(X ; B^{3}\right)_{\rho}$ for $\theta \in[0, \pi]$. As we commented earlier, both are maximal (2) for $\theta=\pi / 2$ and minimal in the extremal values.
+
+\begin{center}
+\includegraphics[max width=\textwidth]{2023_12_17_508808f97c0b6e8410cbg-09(2)}
+\end{center}
+
+(a)
+
+\begin{center}
+\includegraphics[max width=\textwidth]{2023_12_17_508808f97c0b6e8410cbg-09(1)}
+\end{center}
+
+(b)
+
+Figure 3: Plots of $I_{3}(X ; Y)-3 I(X ; Y)$ and $I_{3}\left(X ; B^{3}\right)_{\rho}-3 I(X ; B)_{\rho}$ for $\theta \in[0, \pi]$. As we have already commented, both summands are equal for $\theta=0, \pi$ and become the most different for $\theta=\pi / 2$.
+
+$\left|\theta_{0}\right\rangle$ and $\left|\theta_{1}\right\rangle$ being the same, implies that the four $\left|\psi_{i}\right\rangle$ states will also be the same, and no information would be obtained from the measurements. For the case $\theta=\pi,\left|\theta_{0}\right\rangle$ and $\left|\theta_{1}\right\rangle$ are orthogonal, implies that the four $\left|\psi_{i}\right\rangle$ states will also be orthogonal, and perfectly distinguishable using the right base.
+
+Finally, when computing the difference between 3 independent single qubit state discriminations and the 3 qubit state discrimination, we can see that the triple discrimination encodes 3 bits of information while the single-shot 3 qubit discrimination only encodes 2 . This is the reason both informations tend to be higher in the first case and, thus, the subtraction becomes generally negative. There is one exception, for values of $\theta / \pi$ close to 0 or 1 , where the substraction graph takes positive values. It might be due to the fact that in the individual discrimination the error
+
+\section*{Quantum Information: Homework lecture 6}
+Jofre Abellanet, Arnau Diebra Tomás Fernández, Mireia Torres
+
+is large whereas the triple case, encoding just 2 bits of information, is more resistant to this error. At $\theta / \pi=1 / 2$, we see the maximal difference between the two summands of 1 bit (in absolute value), the result we expected as commented before.
+
+
+\end{document}

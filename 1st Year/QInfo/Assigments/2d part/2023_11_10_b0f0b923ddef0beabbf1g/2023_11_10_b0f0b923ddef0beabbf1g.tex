@@ -1,0 +1,209 @@
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[version=4]{mhchem}
+\usepackage{stmaryrd}
+
+\title{Quantum Information Theory - Homework Lecture 4 }
+
+\author{}
+\date{}
+
+
+\begin{document}
+\maketitle
+\section*{GAVIN KinG}
+October 31, 2023
+
+\section*{Question I}
+We begin by observing that:
+
+$$
+\begin{aligned}
+\sum_{i=1}^{n}\left[I\left(X_{i+1}^{n} ; Y_{1}^{i}\right)-I\left(X_{i}^{n} ; Y_{1}^{i-1}\right)\right] & =\sum_{i=1}^{n} I\left(X_{i+1}^{n} ; Y_{1}^{i}\right)-\sum_{i=0}^{n-1} I\left(X_{i+1}^{n} ; Y_{1}^{i}\right) \\
+& =I\left(X_{n+1}^{n} ; Y_{1}^{i}\right)-I\left(X_{1}^{n} ; Y_{1}^{0}\right) \\
+& =I\left(\emptyset ; Y_{1}^{i}\right)-I\left(X_{1}^{n} ; \emptyset\right) \\
+& =0
+\end{aligned}
+$$
+
+Then, by application of the chain rule for mutual information:
+
+$$
+\begin{aligned}
+\sum_{i=1}^{n} I\left(X_{i+1}^{n} ; Y_{i} \mid Y_{1}^{i-1}\right) & =\sum_{i=1}^{n}\left[I\left(X_{i+1}^{n} ; Y_{1}^{i}\right)-I\left(X_{i+1}^{n} ; Y_{1}^{i-1}\right)\right] \\
+& =\sum_{i=1}^{n}\left[I\left(X_{i+1}^{n} ; Y_{1}^{i}\right)-I\left(X_{i}^{n} ; Y_{1}^{i-1}\right)+I\left(X_{i} ; Y_{1}^{i-1} \mid X_{i+1}^{n}\right)\right] \\
+& =\sum_{i=1}^{n} I\left(X_{i} ; Y_{1}^{i-1} \mid X_{i+1}^{n}\right)
+\end{aligned}
+$$
+
+\section*{Question 2}
+\section*{$\operatorname{PART}(\mathrm{A})$}
+For any $X, Y, Z$ :
+
+$$
+H(X \mid Z) \leq H(X \mid Z)+H(Y \mid X, Z)=H(X, Y \mid Z)=H(Y \mid Z)+H(X \mid Y, Z) \leq H(Y \mid Z)+H(X \mid Y)
+$$
+
+\section*{$\operatorname{PART}(\mathrm{B})$}
+For independent $X, Y$ :
+
+$$
+H(X+Y) \geq H(X+Y \mid Y)=H(X)
+$$
+
+To see that the inequality need not be saturated, consider a sum of Bernoulli variables.
+
+PART (C)
+
+We're given that:
+
+$$
+p_{Y_{1}, Y_{2} \mid X_{1}, X_{2}}\left(y_{1}, y_{2} \mid x_{1}, x_{2}\right)=p_{Y_{1} \mid X_{1}}\left(y_{1} \mid x_{1}\right) p_{Y_{2} \mid X_{2}}\left(y_{2} \mid x_{2}\right)
+$$
+
+We may marginalize over $Y_{1}$ to see that $X_{1} \leftrightarrow X_{2} \leftrightarrow Y_{2}$ or $Y_{2}$ over $Y_{2}$ to see that $Y_{1} \leftrightarrow X_{1} \leftrightarrow X_{2}$. Therefore:
+
+$$
+\begin{aligned}
+I\left(X_{1}, X_{2} ; Y_{1}, Y_{2}\right) & =I\left(X_{1}, X_{2} ; Y_{1}\right)+I\left(X_{1}, X_{2} ; Y_{2} \mid Y_{1}\right) \\
+& =I\left(X_{1} ; Y_{1}\right)+I\left(X_{2} ; Y_{1} \mid X_{1}\right)+I\left(X_{2} ; Y_{2} \mid Y_{1}\right)+I\left(X_{1} ; Y_{2} \mid Y_{1}, X_{2}\right) \\
+& \leq I\left(X_{1} ; Y_{1}\right)+I\left(X_{2} ; Y_{1} \mid X_{1}\right)+I\left(X_{2} ; Y_{2}\right)+I\left(X_{1} ; Y_{2} \mid X_{2}\right) \\
+& =I\left(X_{1} ; Y_{1}\right)+I\left(X_{2} ; Y_{2}\right)
+\end{aligned}
+$$
+
+At the inequality, and also at the last equality we used that $Y_{1} \leftrightarrow X_{1} \leftrightarrow X_{2} \leftrightarrow Y_{2}$ form a Markov chain.
+
+\section*{PART (D)}
+We're given that $p_{X_{1}, X_{2}}\left(x_{1}, x_{2}\right)=p_{X_{1}}\left(x_{1}\right) p_{X_{2}}\left(x_{2}\right)$, that is, that $X_{1}$ and $X_{2}$ are independent.
+
+$$
+\begin{aligned}
+I\left(X_{1}, X_{2} ; Y_{1}, Y_{2}\right) & =I\left(X_{1} ; Y_{1}, Y_{2}\right)+I\left(X_{2} ; Y_{1}, Y_{2} \mid X_{1}\right) \\
+& =I\left(X_{1} ; Y_{1}\right)+I\left(X_{1} ; Y_{2} \mid Y_{1}\right)+I\left(X_{2} ; Y_{2} \mid X_{1}\right)+I\left(X_{2} ; Y_{1} \mid X_{1}, Y_{2}\right) \\
+& \geq I\left(X_{1} ; Y_{1}\right)+I\left(X_{1} ; Y_{2} \mid Y_{1}\right)+I\left(X_{2} ; Y_{2}\right)+I\left(X_{2} ; Y_{1} \mid Y_{2}\right) \\
+& \geq I\left(X_{1} ; Y_{1}\right)+I\left(X_{2} ; Y_{2}\right)
+\end{aligned}
+$$
+
+At the first inequality we used the independence of $X_{1}$ and $X_{2}$.
+
+\section*{QUESTION 3}
+The $Z$ channel is defined by the conditional PMF $p_{Y \mid X}$ :
+
+$$
+p_{Y \mid X}(0 \mid 0)=1 \quad p_{Y \mid X}(1 \mid 1)=\frac{1}{2} \quad p_{Y \mid X}(0 \mid 1)=\frac{1}{2}
+$$
+
+Thus, taking $Z \sim \operatorname{Bern}(p)$, the joint distribution $p_{Y, X}$ is:
+
+$$
+p_{Y, X}(0,0)=1-p \quad p_{Y, X}(1,0)=0 \quad p_{Y, X}(1,1)=\frac{p}{2} \quad p_{Y, X}(0,1)=\frac{p}{2}
+$$
+
+Using $i(y \mid x)=-p_{Y, X}(y, x) \log \frac{p_{Y, X}(y, x)}{p_{X}(x)}$ we obtain:
+
+$$
+i(0 \mid 0)=i(1 \mid 0)=0 \quad i(0 \mid 1)=i(1 \mid 1)=\frac{p}{2}
+$$
+
+and so $H(Y \mid X)=\sum i(y \mid x)=p$.
+
+On the other hand, the marginal distribution $p_{Y}(y)$ is:
+
+$$
+p_{Y}(0)=1-p+\frac{p}{2}=1-\frac{p}{2} \quad p_{Y}(1)=\frac{p}{2}
+$$
+
+and so $Y \sim \operatorname{Bern}\left(\frac{p}{2}\right)$ and thus $H(Y)=H\left(\frac{p}{2}\right)$.
+
+We may now compute the mutual information:
+
+$$
+I(X ; Y)=H(Y)-H(Y \mid X)=H\left(\frac{p}{2}\right)-p=-p-\frac{p}{2} \log \frac{p}{2}-\left(1-\frac{p}{2}\right) \log \left(1-\frac{p}{2}\right)
+$$
+
+This quantity is maximized when:
+
+$$
+0=\frac{d I(X ; Y)}{d p}=\frac{1}{2} \log \left(\frac{1}{2 p}-\frac{1}{4}\right) \quad \Rightarrow \quad p=\frac{2}{5}
+$$
+
+and so the channel capacity is:
+
+$$
+C=\max _{p \in[0,1]} I(X ; Y)=\left.I(X ; Y)\right|_{p=\frac{2}{5}} \simeq 0.322 \text { bits }
+$$
+
+\section*{Question 4}
+The Noisy Typewriter channel is defined by the conditional PDF:
+
+$$
+p_{Y \mid X}(y \mid x)=\frac{1}{2} \delta_{x, y}+\frac{1}{2} \delta_{x-1, y} \quad x, y=1,2, \ldots, N
+$$
+
+And we will write $p_{x} \equiv p_{X}(x)$ for the distribution of $X$.
+
+Then the joint distribution is:
+
+$$
+p_{Y, X}(y, x)=p_{Y \mid X}(y \mid x) p_{X}(x)=\frac{1}{2} \delta_{x, y} p_{x}+\frac{1}{2} \delta_{x-1, y} p_{x-1}
+$$
+
+which we may marginalize to obtain:
+
+$$
+p_{Y}(y)=\sum_{x} p_{Y, X}(y, x)=\sum_{x}\left(\frac{1}{2} \delta_{x, y} p_{x}+\frac{1}{2} \delta_{x-1, y} p_{x-1}\right)=\frac{1}{2}\left(p_{y}+p_{y-1}\right)
+$$
+
+Now, the entropy of $Y$ is:
+
+$$
+\begin{aligned}
+H(Y) & =-\sum_{y} \frac{1}{2}\left(p_{y}+p_{y-1}\right) \log \left(\frac{1}{2}\left(p_{y}+p_{y-1}\right)\right) \\
+& =-\frac{1}{2} \sum_{y}\left(p_{y}+p_{y-1}\right)\left[\log \left(p_{y}+p_{y-1}\right)-1\right] \\
+& =-\frac{1}{2} \sum_{y}\left(p_{y}+p_{y-1}\right) \log \left(p_{y}+p_{y-1}\right)+\frac{1}{2} \sum_{y} p_{y}+\frac{1}{2} \sum_{y} p_{y-1} \\
+& =1-\frac{1}{2} \sum_{y}\left(p_{y}+p_{y-1}\right) \log \left(p_{y}+p_{y-1}\right)
+\end{aligned}
+$$
+
+For $X \sim \operatorname{Unif}(1, N)$, that is, for $p_{X}=1 / N$, we may directly evaluate this expression to obtain $H(Y)=\log N$, which is the maximum entropy for a random variable with $N$ outcomes.
+
+On the other hand, if we set:
+
+$$
+p_{x}= \begin{cases}\frac{2}{N} & x \text { odd } \\ 0 & x \text { even }\end{cases}
+$$
+
+then we also find $H(Y)=\log N$.
+
+We may also evaluate the conditional entropy:
+
+$$
+\begin{aligned}
+H(Y \mid X) & =-\sum_{x, y} p_{Y, X}(y, x) \log p_{p_{Y \mid X}(y \mid x)} \\
+& =-\sum_{y} \sum_{x}\left(\frac{1}{2} \delta_{x, y} p_{x}+\frac{1}{2} \delta_{x-1, y} p_{x-1}\right) \log \left(\frac{1}{2} \delta_{x, y}+\frac{1}{2} \delta_{x-1, y}\right) \\
+& =-\sum_{y}\left(\frac{1}{2} p_{y}+p_{y-1}\right) \log \frac{1}{2}=\sum_{y} p_{y}=1
+\end{aligned}
+$$
+
+and so the mutual information of $X$ and $Y$ is:
+
+$$
+I(X ; Y)=H(Y)-H(Y \mid X)=H(Y)-1
+$$
+
+But we've already noticed that $H(Y)$ is maximized for the two distributions mentioned above, and so the channel capacity is:
+
+$$
+C=\max _{p_{X}(x)} I(X ; Y)=\log N-1
+$$
+
+which, taking an alphabet of size $N=26$, yields $C=\log _{2} 13$ bits.
+
+
+\end{document}
