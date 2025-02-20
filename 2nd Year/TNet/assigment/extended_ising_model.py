@@ -5,11 +5,11 @@ from typing import Iterable
 
 import matplotlib.pyplot as plt
 import numpy as np
+from extended_ising_model import ExtendedIsingModel, ExtendedIsingModelSweeper
 from matplotlib import cm
-from tenpy.algorithms import ExpMPOEvolution, TwoSiteDMRGEngine  # Old TEBDEngine
+from tenpy.algorithms import ExpMPOEvolution, TwoSiteDMRGEngine
 from tenpy.models.spins_nnn import SpinChainNNN2
 from tenpy.networks.mps import MPS
-from tenpy.simulations import RealTimeEvolution
 
 ####################################################################################################
 ################## MAIN Model and ansatz class, with algorithm implemented in it ###################
@@ -146,32 +146,124 @@ class ExtendedIsingModel(SpinChainNNN2):
                 "chi_max": chi,
                 # "svd_min": 1.0e-10,
             },
-            # "verbose": True,
+            "verbose": True,
             # "combine": True,
         }
         return TwoSiteDMRGEngine(state, self, dmrg_params).run()  # E, state
 
-    def run_time_evolution(self, state: MPS) -> dict:
+    def run_time_evolution(self, state: MPS, max_time: float, dt: float, chi_max: int) -> dict:
         """Runs time evolution of the state under the Hamiltonian.
 
         Parameters
         ----------
             state (MPS): The initial state to evolve.
+            max_time (float): The final time to evolve to.
+            dt (float): The time step to use.
+            chi_max (int): The maximum bond dimension to use.
 
         Returns
         -------
             dict: The results as returned by prepare_results_for_save.
         """
         MPO_evol_params = {
-            "dt": 0.1,
-            "order": 4,
+            # "N_steps": 1,
+            "dt": dt,
+            "order": 2,
+            "compression_method": "SVD",
+            "max_E_err": 1.0e-10,
             "trunc_params": {
-                "chi_max": 100,
-                "svd_min": 1.0e-10,
+                "chi_max": chi_max,
+                "svd_min": 1.0e-12,
             },
             "verbose": True,
         }
-        return RealTimeEvolution(ExpMPOEvolution(state, self, MPO_evol_params)).run()
+        eng = ExpMPOEvolution(state, self, MPO_evol_params)
+        data = None
+
+        while eng.evolved_time < max_time:
+            eng.run()
+
+            # Make canonical form and measure the state:
+            eng.psi.canonical_form()
+            data = self.measure(eng, data)
+
+        return data
+
+    @staticmethod
+    def measure(eng: ExpMPOEvolution, data: dict | None) -> dict:
+        """Measure the entropy, expectation values and bond dimensions of the state.
+
+        Parameters
+        ----------
+            eng (ExpMPOEvolution): The engine used to evolve the state.
+            data (dict): The data to append the measurements to. Defaults to None.
+
+        Returns
+        -------
+            dict: The updated data dictionary.
+        """
+        if data is None:
+            data = {
+                "t": [],
+                "entropy": [],
+                "Sx": [],
+                "Sz": [],
+                "trunc_err": [],
+                "max_bond_dim": [],
+                "correlation_length": [],
+                "psi": [],
+                "spectrum": [],
+                "gaps": [],
+                "gap_ratios": [],
+            }
+
+        # Store time axis:
+        data["t"].append(eng.evolved_time)
+
+        # Compute the half-chain entanglement entropy (using the central bond).
+        S_vals = eng.psi.entanglement_entropy()
+        data["entropy"].append(S_vals[len(S_vals) // 2])
+
+        # Record the truncation error:
+        data["trunc_err"].append(eng.trunc_err.eps)
+
+        # Record the maximum bond dimension across all bonds.
+        data["max_bond_dim"].append(max(eng.psi.chi))
+        data["correlation_length"].append(eng.psi.correlation_length())
+
+        # Measure local magnetizations. For translational invariance we average all samples:
+        exp_val_x = eng.psi.expectation_value("Sx")
+        exp_val_z = eng.psi.expectation_value("Sz")
+        data["Sx"].append(sum(exp_val_x) / len(exp_val_x))
+        data["Sz"].append(sum(exp_val_z) / len(exp_val_z))
+
+        # Compute the entanglement spectrum over time:
+        spectrum = eng.psi.entanglement_spectrum()[0] / 2
+        data["spectrum"].append(spectrum)
+
+        # Compute the gaps and gap ratios over time:
+        gaps = ExtendedIsingModel.compute_gaps(spectrum)
+        data["gaps"].append(gaps)
+        data["gap_ratios"].append(gaps / gaps[1])
+
+        return data
+
+    @staticmethod
+    def compute_gaps(ent_spectrum):
+        """Compute the gaps for the 10 lowest eigenvalues of the entanglement spectrum.
+
+        Parameters
+        ----------
+            ent_spectrum (np.ndarray): The entanglement spectrum.
+
+        Returns
+        -------
+            np.ndarray: The gaps for the 10 lowest eigenvalues.
+        """
+        # Sort the entanglement spectrum in ascending order
+        sorted_spectrum = np.sort(ent_spectrum)
+        # Compute the gaps for the 10 lowest eigenvalues
+        return sorted_spectrum[:10] - sorted_spectrum[0]
 
 
 ####################################################################################################
@@ -339,7 +431,7 @@ class ExtendedIsingModelSweeper:
             lmbd_values (Iterable[float]): List of lambda values to sweep.
         """
         # Post-process results:
-        figure = plt.figure(figuresize=(16, 12))
+        figure = plt.figure(figsize=(16, 12))
         ax = [figure.add_subplot(max(len(Ds) // 2, 1), 3, i, projection="3d") for i in range(1, len(Ds) + 1)]
 
         for i, D in enumerate(Ds):
@@ -469,5 +561,146 @@ class ExtendedIsingModelSweeper:
         plt.ylabel(ylabel)
         plt.grid(True)
 
+        plt.tight_layout()
+        plt.show()
+
+
+####################################################################################################
+################ Plotter class to plot the final time evolutions of the algorithms #################
+####################################################################################################
+
+
+class ExtIsingModelTimeEvolPlotter:
+    @staticmethod
+    def plot_time_evolution(results: dict, color: str) -> None:
+        """Plot the results of the time evolution.
+
+        Parameters
+        ----------
+            results (dict): Dictionary containing the time evolution data.
+            color (str): The color palette to use.
+        """
+        _, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 12))
+        axs = [ax1, ax2, ax3, ax4]
+
+        # Use plasma color palette
+        colors = cm._colormaps[color](np.linspace(0.0, 0.95, 7))
+
+        # All the data to plot:
+        plot_dict = {
+            "Magnetization": [
+                ([2 * sx for sx in results["Sz"]], r"$\langle \sigma^x \rangle$"),
+                ([2 * sz for sz in results["Sx"]], r"$\langle \sigma^z \rangle$"),
+            ],
+            "Correlation & Entropy": [
+                ([np.mean(ent) for ent in results["entropy"]], "entropy"),
+                (results["correlation_length"], "correlation length"),
+            ],
+            "Bond Dimension": [results["max_bond_dim"]],
+            "Truncation Error": [results["trunc_err"]],
+        }
+
+        for i, (ylabel, datas) in enumerate(plot_dict.items()):
+            if len(datas) == 1:
+                axs[i].plot(results["t"], datas[0], marker="o", linestyle="-", color=colors[2])
+            else:
+                for j, data in enumerate(datas):
+                    axs[i].plot(
+                        results["t"], data[0], label=data[1], marker="o", linestyle="-", color=colors[2 + 2 * j]
+                    )
+                    axs[i].legend()
+            axs[i].set_title(f"{ylabel} vs Time")
+            axs[i].set_xlabel("Time")
+            axs[i].set_ylabel(ylabel)
+            axs[i].grid(True)
+
+        # Adjust layout
+        plt.tight_layout()
+        plt.show()
+
+    @staticmethod
+    def plot_gaps_over_time(results: dict[str, list], colors: str) -> list:
+        """Plot the gaps and their ratios as functions of time.
+
+        Parameters
+        ----------
+            results (dict[str, list]): Dictionary containing the time evolution data.
+            colors (str): The color palette to use.
+
+        Returns
+        -------
+            list: The entanglement spectra.
+        """
+        # Convert lists to numpy arrays for easier plotting
+        gaps_over_time = [[gaps[i] for gaps in results["gaps"]] for i in range(min(10, len(results["gaps"][0])))]
+        gap_ratios_over_time = [
+            [gap_ratios[i] for gap_ratios in results["gap_ratios"]]
+            for i in range(min(10, len(results["gap_ratios"][0])))
+        ]
+
+        # Plot the gaps and their ratios as functions of time
+        _, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+        # Use plasma color palette
+        colors = cm._colormaps[colors](np.linspace(0, 0.85, 10))
+
+        # Plot gaps
+        for i in range(min(10, len(results["gaps"][0]))):
+            ax1.plot(results["t"], gaps_over_time[i], label=f"Δ{i}", color=colors[i])
+        ax1.set_title("Gaps Δi over Time")
+        ax1.set_xlabel("Time")
+        ax1.set_ylabel("Gap Δi")
+        ax1.legend()
+        ax1.grid(True)
+
+        # Plot gap ratios
+        for i in range(min(10, len(results["gap_ratios"][0]))):
+            ax2.plot(results["t"], gap_ratios_over_time[i], label=f"Δ{i}/Δ1", color=colors[i])
+        ax2.set_title("Gap Ratios Δi/Δ1 over Time")
+        ax2.set_xlabel("Time")
+        ax2.set_ylabel("Gap Ratio Δi/Δ1")
+        ax2.legend()
+        ax2.grid(True)
+
+        plt.tight_layout()
+        plt.show()
+
+    @staticmethod
+    def plot_time_evolution_of_spectra(results: dict[str, list], color: str):
+        """Plot the evolution of the entanglement spectrum over time.
+
+        Parameters
+        ----------
+            results (dict[str, list]): Dictionary containing the time evolution data.
+            color (str): The color palette to use.
+        """
+        # Convert the list of entanglement spectra into a NumPy array for easier slicing
+        # Take only the first 10 eigenvalues from each spectrum
+        ent_spec_array = [
+            [spectrum[i] for spectrum in results["spectrum"]] for i in range(min(10, len(results["spectrum"][0])))
+        ]
+        # Create a figure with a larger size for better visibility
+        plt.figure(figsize=(12, 7))
+        colors = cm._colormaps[color](np.linspace(0, 0.85, 10))
+
+        # Plot the first 10 entanglement spectrum values over time
+        for i in range(min(10, len(results["spectrum"][0]))):
+            plt.plot(
+                results["t"],
+                ent_spec_array[i],
+                label=f"$e_{{{i + 1}}}$",
+                color=colors[i],
+                marker=".",
+                markersize=3,
+            )
+
+        # Customize the plot
+        plt.xlabel("Time", fontsize=12)
+        plt.ylabel("Entanglement Spectrum $e_i = -\\log(\\lambda_i)$", fontsize=12)
+        plt.title("Evolution of Entanglement Spectrum", fontsize=14)
+        plt.grid(True, alpha=0.3)
+        plt.legend()
+
+        # Adjust layout to prevent label cutoff
         plt.tight_layout()
         plt.show()
